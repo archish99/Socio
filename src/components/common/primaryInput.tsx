@@ -4,7 +4,7 @@ import {KeyboardTypeOptions} from 'react-native';
 import colors from '../../constants/common/colors';
 
 interface Props {
-  value: string;
+  value?: string;
   onChange: (e: string) => void;
   keyboardType?: KeyboardTypeOptions;
   placeholder: string;

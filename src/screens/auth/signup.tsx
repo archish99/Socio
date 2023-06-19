@@ -14,11 +14,14 @@ import React, {useState} from 'react';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useDispatch} from 'react-redux';
 import PrimaryBtn from '../../components/common/primaryBtn';
 import PrimaryInput from '../../components/common/primaryInput';
 import Container from '../../components/layout/container';
 import colors from '../../constants/common/colors';
 import {AuthStackParamsList} from '../../navigation/auth';
+import {AppDispatch} from '../../redux/store';
+import {signupThunk} from '../../redux/thunk/user';
 import {signupSchema} from '../../utils/validation/schema/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamsList, 'signup'>;
@@ -27,6 +30,9 @@ const Signup: React.FC<Props> = ({navigation}) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const formikProps = useFormik({
     initialValues: {
@@ -35,13 +41,24 @@ const Signup: React.FC<Props> = ({navigation}) => {
       confirmPassword: '',
     },
     validationSchema: signupSchema,
-    onSubmit: (values: {
-      email: string;
-      password: string;
-      confirmPassword: string;
-    }) => {
-      console.log('values:: ', values);
-      navigation.navigate('selectCountry');
+    onSubmit: async (
+      values: {
+        email: string;
+        password: string;
+        confirmPassword: string;
+      },
+      helpers,
+    ) => {
+      setIsLoading(true);
+      await dispatch(
+        signupThunk({
+          email: values.email,
+          password: values.password,
+          confirmPassword: values.confirmPassword,
+        }),
+      ).unwrap();
+      setIsLoading(false);
+      helpers.resetForm();
     },
   });
 
@@ -122,6 +139,7 @@ const Signup: React.FC<Props> = ({navigation}) => {
                 !values.email || !values.password || !values.confirmPassword
               }
               onPress={handleSubmit}
+              loading={isLoading}
             />
           </VStack>
           <Text my="20px" textAlign="center">

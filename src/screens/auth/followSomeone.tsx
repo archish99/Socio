@@ -8,7 +8,7 @@ import {AuthStackParamsList} from '../../navigation/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamsList, 'followSomeone'>;
 
-const FollowSomeone: React.FC<Props> = () => {
+const FollowSomeone: React.FC<Props> = ({navigation}) => {
   const [searchStr, setSearchStr] = useState<string>('');
 
   return (
@@ -26,6 +26,7 @@ const FollowSomeone: React.FC<Props> = () => {
         <PrimaryBtn
           title="Continue"
           extraBtnStyles={{mt: 'auto', rounded: 'full'}}
+          onPress={() => navigation.navigate('tabs')}
         />
       </Box>
     </Container>

@@ -8,6 +8,7 @@ interface Props {
   onPress?: () => void;
   disabled?: boolean;
   leftIcon?: JSX.Element;
+  loading?: boolean;
 }
 
 const PrimaryBtn: React.FC<Props> = ({
@@ -16,6 +17,7 @@ const PrimaryBtn: React.FC<Props> = ({
   onPress,
   disabled,
   leftIcon,
+  loading,
 }) => {
   return (
     <Button
@@ -24,6 +26,7 @@ const PrimaryBtn: React.FC<Props> = ({
       _pressed={{bg: colors.primaryColor, opacity: 0.7}}
       isDisabled={disabled}
       leftIcon={leftIcon}
+      isLoading={loading}
       {...extraBtnStyles}>
       {title}
     </Button>

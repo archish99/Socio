@@ -18,12 +18,15 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import PhoneInput from 'react-native-phone-number-input';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {useDispatch} from 'react-redux';
 import PrimaryBtn from '../../components/common/primaryBtn';
 import PrimaryInput from '../../components/common/primaryInput';
 import SocioDatePicker from '../../components/common/socioDatePicker';
 import Container from '../../components/layout/container';
 import colors from '../../constants/common/colors';
 import {AuthStackParamsList} from '../../navigation/auth';
+import {AppDispatch} from '../../redux/store';
+import {updateUser} from '../../redux/thunk/user';
 import {profileSchema} from '../../utils/validation/schema/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamsList, 'profile'>;
@@ -34,6 +37,9 @@ const Profile: React.FC<Props> = ({navigation}) => {
   const [profileImageRes, setProfileImageRes] = useState<
     ImagePickerResponse | undefined
   >();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const formikProps = useFormik({
     initialValues: {
@@ -44,9 +50,24 @@ const Profile: React.FC<Props> = ({navigation}) => {
       occupation: '',
     },
     validationSchema: profileSchema,
-    onSubmit: values => {
-      console.log('values:: ', values);
-      navigation.navigate('followSomeone');
+    onSubmit: async (values, helpers) => {
+      try {
+        setIsLoading(true);
+        await dispatch(
+          updateUser({
+            fullName: values.fullName,
+            username: values.username,
+            dob: values.dob,
+            phoneNumber: values.phoneNumber,
+            occupation: values.occupation,
+          }),
+        ).unwrap();
+        setIsLoading(false);
+        helpers.resetForm();
+        navigation.navigate('followSomeone');
+      } catch (err: any) {
+        console.error('ERROR:: ', err.message);
+      }
     },
   });
 
@@ -64,6 +85,8 @@ const Profile: React.FC<Props> = ({navigation}) => {
       console.error('ERROR:: ', err);
     }
   };
+
+  console.log('date:: ', values.dob);
 
   return (
     <Container backHasTitle title="Fill Your Profile">
@@ -199,6 +222,7 @@ const Profile: React.FC<Props> = ({navigation}) => {
                 !values.occupation
               }
               onPress={handleSubmit}
+              loading={isLoading}
             />
           </VStack>
         </Box>

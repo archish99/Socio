@@ -2,7 +2,6 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useFormik} from 'formik';
 import {
   Box,
-  Checkbox,
   FormControl,
   HStack,
   Icon,
@@ -15,36 +14,40 @@ import React, {useState} from 'react';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {useDispatch} from 'react-redux';
 import PrimaryBtn from '../../components/common/primaryBtn';
 import PrimaryInput from '../../components/common/primaryInput';
 import Container from '../../components/layout/container';
 import colors from '../../constants/common/colors';
 import {AuthStackParamsList} from '../../navigation/auth';
+import {AppDispatch} from '../../redux/store';
+import {loginThunk} from '../../redux/thunk/user';
 import {loginSchema} from '../../utils/validation/schema/auth';
 
 type Props = NativeStackScreenProps<AuthStackParamsList, 'login'>;
 
 const Login: React.FC<Props> = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const formikProps = useFormik({
     initialValues: {
       email: '',
       password: '',
-      rememberMe: false,
     },
     validationSchema: loginSchema,
-    onSubmit: (values: {
-      email: string;
-      password: string;
-      rememberMe: boolean;
-    }) => {
-      console.log('values:: ', values);
+    onSubmit: async (values: {email: string; password: string}) => {
+      setIsLoading(true);
+      await dispatch(
+        loginThunk({email: values.email, password: values.password}),
+      ).unwrap();
+      setIsLoading(false);
     },
   });
 
-  const {values, touched, errors, handleChange, handleSubmit, setFieldValue} =
-    formikProps;
+  const {values, touched, errors, handleChange, handleSubmit} = formikProps;
 
   return (
     <Container>
@@ -90,21 +93,12 @@ const Login: React.FC<Props> = () => {
                 {errors.password}
               </FormControl.ErrorMessage>
             </FormControl>
-            <Checkbox
-              isChecked={values.rememberMe}
-              value=""
-              colorScheme="red"
-              mx="auto"
-              my="10px"
-              borderColor={colors.primaryColor}
-              onChange={e => setFieldValue('rememberMe', e)}>
-              <Text>Remember Me</Text>
-            </Checkbox>
             <PrimaryBtn
               title="Login"
               extraBtnStyles={{mt: '10px', rounded: 'full'}}
               disabled={!values.email || !values.password}
               onPress={handleSubmit}
+              loading={isLoading}
             />
             <Text textAlign="center" color={colors.primaryColor}>
               Forgot password?
